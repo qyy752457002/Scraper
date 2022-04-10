@@ -11,6 +11,7 @@ from psycopg2 import sql
 import argparse
 
 class SeleniumScraper():
+
     def __init__(self, driver):
         self.driver = driver
         self.CNN_data = dict()
@@ -345,4 +346,4 @@ if __name__ == '__main__':
     scraper = SeleniumScraper(driver)
     scraper.Browse_ABC()
     scraper.Browse_CNN()
-    scraper.Quit(
+    scraper.Quit()
