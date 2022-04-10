@@ -11,7 +11,7 @@ from psycopg2 import sql
 import argparse
 
 class SeleniumScraper():
-
+	
     def __init__(self, driver):
         self.driver = driver
         self.CNN_data = dict()
@@ -273,7 +273,6 @@ class SeleniumScraper():
     def Create_Insert_Table(self, data, name):
         
 	# create tables in the PostgreSQL database
-
         query = """
             CREATE TABLE IF NOT EXISTS %(table)s (
                 URL TEXT NOT NULL PRIMARY KEY,
