@@ -5,9 +5,8 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException,
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-import os
-import argparse
 import pandas as pd
+import argparse
 
 class SeleniumScraper():
 
@@ -271,7 +270,6 @@ class SeleniumScraper():
             self.Save_to_csv(topic, self.ABC_data)
 
     def Save_to_csv(self, title, data):
-
         csv_file =  title + '.csv'
         df = pd.DataFrame.from_dict(data[title]) 
         df.to_csv (csv_file, index = False, header = True)
