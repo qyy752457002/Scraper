@@ -1,20 +1,20 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, WebDriverException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, WebDriverException, StaleElementReferenceException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import os
 import argparse
-import json
-import time
+import pandas as pd
 
 class SeleniumScraper():
 
     def __init__(self, driver):
         self.driver = driver
-        self.web_data = dict()
+        self.CNN_data = dict()
+        self.ABC_data = dict()
 
     def Browse_CNN(self):
         self.driver.get('https://edition.cnn.com/')
@@ -26,22 +26,19 @@ class SeleniumScraper():
         # store urls from topics' web elements
         urls = []
 
-        # store topic names
-        topic_dic = dict()
-
         # iterate over each topic to get topic name and its url
         for topic_element in topics:
             topic_name = topic_element.get_attribute("innerText")
             if topic_name == '':
                 continue
-            topic_dic[topic_name] = []
+            self.CNN_data[topic_name] = []
             url = topic_element.get_attribute('href')
             urls.append(url)
 
         # iterate over each topic's url
         for index, url in enumerate(urls):
 
-            topic = list(topic_dic.keys())[index]
+            topic = list(self.CNN_data.keys())[index]
 
             self.driver.get(url)
 
@@ -87,15 +84,23 @@ class SeleniumScraper():
                 author = ""
                 post_time = ""
                 paragraphs = ""
+
+                check = False
                 
                 try:
                     # get body paragraphs
                     paragraph_elements = self.driver.find_elements(by=By.CLASS_NAME, value = "zn-body__paragraph")
-                    paragraphs = "".join([element.get_attribute("innerText") for element in paragraph_elements])
-                    if paragraphs == "":
-                        continue
+
+                    try:
+                        paragraphs = "".join([element.get_attribute("innerText") for element in paragraph_elements])
+                    except StaleElementReferenceException:
+                        check = True
+                    
                 # if the article does not exist on the current page, then go to the next url
                 except NoSuchElementException:
+                    continue
+
+                if check or paragraphs == "":
                     continue
 
                 article = dict()
@@ -124,8 +129,8 @@ class SeleniumScraper():
                 article['post_time'] = post_time
                 article['article'] = paragraphs
                 
-                # add current article to topic_dic
-                topic_dic[topic].append(article)
+                # add current article
+                self.CNN_data[topic].append(article)
 
                 print(article)
 
@@ -133,8 +138,7 @@ class SeleniumScraper():
                 if counter == limit:
                     break
 
-        # add current website's data to web_data
-        self.web_data['CNN'] = topic_dic
+            self.Save_to_csv(topic, self.CNN_data)
 
     def Browse_ABC(self):
 
@@ -154,24 +158,19 @@ class SeleniumScraper():
         # store urls from topics' web elements
         urls = []
 
-        # store topic names
-        topic_dic = dict()
-
         # iterate over each topic to get topic name and its url
         for topic_element in topics:
             topic_name = topic_element.get_attribute("innerText")
             if topic_name == '':
                 continue
-            topic_dic[topic_name] = []
+            self.ABC_data[topic_name] = []
             url = topic_element.get_attribute('href')
             urls.append(url)
-
-        print(topic_dic)
 
         # iterate over each topic's url
         for index, url in enumerate(urls):
 
-            topic = list(topic_dic.keys())[index]
+            topic = list(self.ABC_data.keys())[index]
 
             self.driver.get(url)
 
@@ -216,16 +215,24 @@ class SeleniumScraper():
                 post_time = ""
                 paragraphs = ""
 
+                check = False
+
                 try:
                     # get body paragraphs                               
                     paragraph_elements = self.driver.find_elements(by=By.CLASS_NAME, value = "_1HzXw")
-                    paragraphs = "".join([element.get_attribute("innerText") for element in paragraph_elements])
-                    if paragraphs == "":
-                        continue
-                # if the article does not exist on the current page, then go to the next url
+
+                    try:
+                        paragraphs = "".join([element.get_attribute("innerText") for element in paragraph_elements])
+                    except StaleElementReferenceException:
+                        check = True
+                    
+                    # if the article does not exist on the current page, then go to the next url
                 except NoSuchElementException:
                     continue
 
+                if check or paragraphs == "":
+                    continue
+                
                 article = dict()
 
                 try:
@@ -252,8 +259,8 @@ class SeleniumScraper():
                 article['post_time'] = post_time
                 article['article'] = paragraphs
                 
-                # add current article to topic_dic
-                topic_dic[topic].append(article)
+                # add current article
+                self.ABC_data[topic].append(article)
 
                 print(article)
 
@@ -261,18 +268,13 @@ class SeleniumScraper():
                 if counter == limit:
                     break
 
-        # add current website's data to web_data
-        self.web_data['ABC'] = topic_dic
+            self.Save_to_csv(topic, self.ABC_data)
 
-    def Save_to_json(self, title):
+    def Save_to_csv(self, title, data):
 
-        path = "./"
-        filePathNameWExt = os.path.join(path, title + '.json')
-
-        with open(filePathNameWExt, 'w') as fp:
-      
-            json_str = json.dumps(self.web_data[title])
-            fp.write(json_str)
+        csv_file =  title + '.csv'
+        df = pd.DataFrame.from_dict(data[title]) 
+        df.to_csv (csv_file, index = False, header = True)
             
     def Quit(self):
         self.driver.quit()
@@ -288,7 +290,5 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(service = s)
     scraper = SeleniumScraper(driver)
     scraper.Browse_ABC()
-    scraper.Save_to_json('ABC')
     scraper.Browse_CNN()
-    scraper.Save_to_json('CNN')
     scraper.Quit()
