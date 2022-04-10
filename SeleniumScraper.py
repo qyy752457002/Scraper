@@ -5,11 +5,12 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException,
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-import pandas as pd
+import psycopg2
+from psycopg2.extensions import AsIs
+from psycopg2 import sql
 import argparse
 
 class SeleniumScraper():
-
     def __init__(self, driver):
         self.driver = driver
         self.CNN_data = dict()
@@ -120,7 +121,8 @@ class SeleniumScraper():
                     post_time = self.driver.find_element(by=By.CLASS_NAME, value = 'update-time').get_attribute("innerText")
                 except NoSuchElementException:
                     print("no post time found")
-
+                    
+                article['url'] = item
                 article['title'] = title
                 article['author'] = author
                 article['post_time'] = post_time
@@ -135,7 +137,7 @@ class SeleniumScraper():
                 if counter == limit:
                     break
 
-            self.Save_to_csv(topic, self.CNN_data)
+            self.Create_Insert_Table(self.CNN_data, topic)
 
     def Browse_ABC(self):
 
@@ -250,6 +252,7 @@ class SeleniumScraper():
                 except NoSuchElementException:
                     print("no post time found")
 
+                article['url'] = item
                 article['title'] = title
                 article['author'] = author
                 article['post_time'] = post_time
@@ -264,13 +267,64 @@ class SeleniumScraper():
                 if counter == limit:
                     break
 
-            self.Save_to_csv(topic, self.ABC_data)
+            self.Create_Insert_Table(self.ABC_data, topic)
 
-    def Save_to_csv(self, title, data):
-        csv_file =  title + '.csv'
-        df = pd.DataFrame.from_dict(data[title]) 
-        df.to_csv (csv_file, index = False, header = True)
-            
+    def Create_Insert_Table(self, data, name):
+        
+	# create tables in the PostgreSQL database
+
+        query = """
+            CREATE TABLE IF NOT EXISTS %(table)s (
+                URL TEXT NOT NULL PRIMARY KEY,
+                TITLE TEXT NOT NULL,
+                AUTHOR TEXT NOT NULL,
+                POST_TIME TEXT NOT NULL,
+                ARTICLE TEXT NOT NULL )
+   
+                """
+
+        # keep the table name lowercased without blank space
+        table_name = "".join(name.split()).lower()
+        
+        hostname = 'scraper-db.cpxwep3plgox.us-east-1.rds.amazonaws.com'
+        database = 'testDB'
+        username = 'postgres'
+        pwd = 'qyy2614102'
+        port_id = 5432
+
+        conn = None
+        cur = None
+	
+        try:
+            conn = psycopg2.connect(
+                host = hostname,
+                dbname = database,
+                user = username,
+                password = pwd,
+                port = port_id )
+
+            cur = conn.cursor()
+		
+            # create a table
+            cur.execute(query, {'table': AsIs(table_name)})
+            print('Table created: ', table_name)
+
+            # insert data
+            insert_script = sql.SQL('INSERT INTO {table} (URL, TITLE, AUTHOR, POST_TIME, ARTICLE) VALUES(%s, %s, %s, %s, %s)').format(table=sql.Identifier(table_name))
+            insert_values = [list(dic.values()) for dic in data[name]]
+            for record in insert_values:
+                cur.execute(insert_script, record)	    
+
+            conn.commit()
+	    
+        except Exception as error:
+            print(error)
+        finally:
+            if cur is not None:
+                cur.close()
+            if conn is not None:
+                conn.close()
+        
     def Quit(self):
         self.driver.quit()
         
@@ -291,4 +345,4 @@ if __name__ == '__main__':
     scraper = SeleniumScraper(driver)
     scraper.Browse_ABC()
     scraper.Browse_CNN()
-    scraper.Quit()
+    scraper.Quit(
