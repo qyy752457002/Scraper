@@ -17,7 +17,6 @@ class SeleniumScraper():
 
     def Browse_CNN(self):
         self.driver.get('https://edition.cnn.com/')
-        self.driver.maximize_window()
 
         # collect all topics' web elements
         topics = self.driver.find_elements(by=By.CSS_SELECTOR, value = '[data-analytics="header_top-nav"]')
@@ -79,9 +78,9 @@ class SeleniumScraper():
                 except WebDriverException:
                     continue
 
-                title = ""
-                author = ""
-                post_time = ""
+                title = "NULL"
+                author = "NULL"
+                post_time = "NULL"
                 paragraphs = ""
 
                 check = False
@@ -122,7 +121,6 @@ class SeleniumScraper():
                 except NoSuchElementException:
                     print("no post time found")
 
-                article['url'] = item
                 article['title'] = title
                 article['author'] = author
                 article['post_time'] = post_time
@@ -209,9 +207,9 @@ class SeleniumScraper():
                 except WebDriverException:
                     continue
 
-                title = ""
-                author = ""
-                post_time = ""
+                title = "NULL"
+                author = "NULL"
+                post_time = "NULL"
                 paragraphs = ""
 
                 check = False
@@ -252,7 +250,6 @@ class SeleniumScraper():
                 except NoSuchElementException:
                     print("no post time found")
 
-                article['url'] = item
                 article['title'] = title
                 article['author'] = author
                 article['post_time'] = post_time
@@ -286,6 +283,11 @@ if __name__ == '__main__':
     # my local driver path = 'C:\Program Files\Google\Chrome\Application\chromedriver.exe'
     s = Service(args.path)
     driver = webdriver.Chrome(service = s)
+
+    # set English as chromdriver's defult language
+    options = webdriver.ChromeOptions()
+    options.add_argument('--lang=en')
+    
     scraper = SeleniumScraper(driver)
     scraper.Browse_ABC()
     scraper.Browse_CNN()
