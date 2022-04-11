@@ -289,7 +289,7 @@ class SeleniumScraper():
         hostname = 'scraper-db.cpxwep3plgox.us-east-1.rds.amazonaws.com'
         database = 'testDB'
         username = 'postgres'
-        #pwd = 'qyy2614102'
+        pwd = 'qyy2614102'
         port_id = 5432
 
         conn = None
@@ -300,6 +300,7 @@ class SeleniumScraper():
                 host = hostname,
                 dbname = database,
                 user = username,
+		password = pwd,
                 port = port_id )
 
             cur = conn.cursor()
