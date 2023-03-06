@@ -293,6 +293,8 @@ class SeleniumScraper():
         # port_id = 5432
 
         db_credential = open('C:/Users/75245/Scraper/db_credential.txt', 'r')
+        # read the content
+        content = db_credential.readlines()
 
         conn = None
         cur = None
@@ -305,11 +307,11 @@ class SeleniumScraper():
 	
         try:
             conn = psycopg2.connect(
-                host = db_credential[host_idx],
-                dbname = db_credential[dbname_idx],
-                user = db_credential[user_idx],
-		        password = db_credential[password_idx],
-                port = int(db_credential[pord_idx]))
+                host = content[host_idx],
+                dbname = content[dbname_idx],
+                user = content[user_idx],
+		        password = content[password_idx],
+                port = int(content[pord_idx]))
 
             cur = conn.cursor()
 		
