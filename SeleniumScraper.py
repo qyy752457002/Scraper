@@ -12,12 +12,16 @@ import argparse
 
 class SeleniumScraper():
 	
+    def __new__(cls, *args, **kwargs):
+        return super(SeleniumScraper, cls).__new__(cls)
+	
     def __init__(self, driver):
         self.driver = driver
         self.CNN_data = dict()
         self.ABC_data = dict()
 
     def Browse_CNN(self):
+	
         self.driver.get('https://edition.cnn.com/')
 
         # collect all topics' web elements
@@ -270,7 +274,7 @@ class SeleniumScraper():
 
             self.Create_Insert_Table(self.ABC_data, topic)
 
-    def Create_Insert_Table(self, data, name):
+    def Create_Insert_Table(self, data: dict, name: str):
         
 	# create tables in the PostgreSQL database
         query = """
