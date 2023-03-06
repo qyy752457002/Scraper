@@ -314,7 +314,7 @@ class SeleniumScraper():
                 host = content[host_idx],
                 dbname = content[dbname_idx],
                 user = content[user_idx],
-		        password = content[password_idx],
+		password = content[password_idx],
                 port = int(content[pord_idx]))
 
             cur = conn.cursor()
