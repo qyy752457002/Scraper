@@ -286,22 +286,30 @@ class SeleniumScraper():
         # keep the table name lowercased without blank space
         table_name = "".join(name.split()).lower()
         
-        hostname = 'scraper-db.cpxwep3plgox.us-east-1.rds.amazonaws.com'
-        database = 'testDB'
-        username = 'postgres'
-        pwd = 'qyy2614102'
-        port_id = 5432
+        # hostname = 'scraper-db.cpxwep3plgox.us-east-1.rds.amazonaws.com'
+        # database = 'testDB'
+        # username = 'postgres'
+        # pwd = 'qyy2614102'
+        # port_id = 5432
+
+        db_credential = open('C:/Users/75245/Scraper/db_credential.txt', 'r')
 
         conn = None
         cur = None
+
+        host_idx = 0
+        dbname_idx = 1
+        user_idx = 2
+        password_idx = 3
+        pord_idx = 4
 	
         try:
             conn = psycopg2.connect(
-                host = hostname,
-                dbname = database,
-                user = username,
-		password = pwd,
-                port = port_id )
+                host = db_credential[host_idx],
+                dbname = db_credential[dbname_idx],
+                user = db_credential[user_idx],
+		        password = db_credential[password_idx],
+                port = int(db_credential[pord_idx]))
 
             cur = conn.cursor()
 		
@@ -324,6 +332,8 @@ class SeleniumScraper():
                 cur.close()
             if conn is not None:
                 conn.close()
+
+            db_credential.close()
         
     def Quit(self):
         self.driver.quit()
