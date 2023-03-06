@@ -307,11 +307,11 @@ class SeleniumScraper():
 	
         try:
             conn = psycopg2.connect(
-                host = content[host_idx],
-                dbname = content[dbname_idx],
-                user = content[user_idx],
-		        password = content[password_idx],
-                port = int(content[pord_idx]))
+                host = db_credential[host_idx],
+                dbname = db_credential[dbname_idx],
+                user = db_credential[user_idx],
+		        password = db_credential[password_idx],
+                port = int(db_credential[pord_idx]))
 
             cur = conn.cursor()
 		
