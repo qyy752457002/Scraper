@@ -296,7 +296,7 @@ class SeleniumScraper():
         # pwd = 'qyy2614102'
         # port_id = 5432
 
-        db_credential = open('C:/Users/75245/Scraper/db_credential.txt', 'r')
+        db_credential = open('Scraper/db_credential.txt', 'r')
         # read the content
         content = db_credential.readlines()
 
