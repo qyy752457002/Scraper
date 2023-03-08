@@ -290,12 +290,6 @@ class SeleniumScraper():
         # keep the table name lowercased without blank space
         table_name = "".join(name.split()).lower()
         
-        # hostname = 'scraper-db.cpxwep3plgox.us-east-1.rds.amazonaws.com'
-        # database = 'testDB'
-        # username = 'postgres'
-        # pwd = 'qyy2614102'
-        # port_id = 5432
-
         db_credential = open('Scraper/db_credential.txt', 'r')
         # read the content
         content = db_credential.readlines()
